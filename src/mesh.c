@@ -74,6 +74,40 @@ int loadObj(const char* filename, Mesh* mesh) {
     mesh->verticesSize = sizeof(Vertex) * vertexCount;
     mesh->indicesSize = sizeof(GLuint) * indexCount;
 
+    mesh->vertexCount = vertexCount;
+    mesh->indexCount = indexCount;
+
     fclose(file);
     return 1;
+}
+
+void calculateNormals(Mesh* mesh) {
+    for (size_t i = 0; i < mesh->indexCount; i += 3) {
+        GLuint i0 = mesh->indices[i];
+        GLuint i1 = mesh->indices[i + 1];
+        GLuint i2 = mesh->indices[i + 2];
+
+        vec3 v0, v1, v2, edge1, edge2, normal;
+        glm_vec3_copy(mesh->vertices[i0].position, v0);
+        glm_vec3_copy(mesh->vertices[i1].position, v1);
+        glm_vec3_copy(mesh->vertices[i2].position, v2);
+
+        // Обчислення векторів країв трикутника
+        glm_vec3_sub(v1, v0, edge1);
+        glm_vec3_sub(v2, v0, edge2);
+
+        // Обчислення нормалі через векторний добуток
+        glm_vec3_cross(edge1, edge2, normal);
+        glm_vec3_normalize(normal);
+
+        // Призначення нормалі всім вершинам трикутника
+        glm_vec3_add(mesh->vertices[i0].normal, normal, mesh->vertices[i0].normal);
+        glm_vec3_add(mesh->vertices[i1].normal, normal, mesh->vertices[i1].normal);
+        glm_vec3_add(mesh->vertices[i2].normal, normal, mesh->vertices[i2].normal);
+    }
+
+    // Нормалізація всіх нормалей
+    for (size_t i = 0; i < mesh->vertexCount; i++) {
+        glm_vec3_normalize(mesh->vertices[i].normal);
+    }
 }

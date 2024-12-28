@@ -18,13 +18,13 @@ void setupMatrices(mat4* modelMatrix, mat4* viewMatrix, mat4* projectionMatrix, 
     // Обертання куба
     float angle = glfwGetTime();
     vec3 modelPos = {0.0f, 0.0f, 0.0f};
-    vec3 modelRot = {0.0f, angle * 30, angle * 20};
+    vec3 modelRot = {0.0f, angle * 70, 0.0f};
     vec3 modelScale = {1.0f, 1.0f, 1.0f};
 
     createModelMatrix(modelMatrix, modelPos, modelRot, modelScale);
 
     Camera camera = {
-	.position = {0.0f, 0.0f, 3.0f},
+	.position = {0.0f, 0.0f, 5.0f},
     	.rotation = {0.0f, 0.0f, 0.0},
     	.fov = M_PI / 4.0f,           // 45 градусів у радіанах
     	.aspect = 800.0f / 600.0f,    // Співвідношення сторін екрану
@@ -69,25 +69,24 @@ void init() {
 
 void loop() {
     Mesh cubeMesh;
-    createCube(&cubeMesh);
-    /*
-    if(!loadObj("src/3d_models/monkey.obj", &model)){
+    //createCube(&cubeMesh);
+    
+    if(!loadObj("src/3d_models/monkey.obj", &cubeMesh)){
         exit(-1);
-    }*/
-    //printf("%f\n", cubeMesh.vertices[11].position[0]);
+    }
+    calculateNormals(&cubeMesh);
 
     RenderObject cubeRenderObject = createRenderObject(cubeMesh);
 
-    GLuint shaderProgram = createShaderProgramFromSource("src/shaders/vertex_shader.glsl", "src/shaders/fragment_shader.glsl", SHADER_LANG_GLSL);
+    free(cubeMesh.vertices);
+    free(cubeMesh.indices);
 
-    //printf("%zu\n", cubeRenderObject.indicesCount);
+    GLuint shaderProgram = createShaderProgramFromSource("src/shaders/vertex_shader.glsl", "src/shaders/fragment_shader.glsl", SHADER_LANG_GLSL);
     
     GLuint modelLoc = glGetUniformLocation(shaderProgram, "model");
     GLuint viewLoc = glGetUniformLocation(shaderProgram, "view");
     GLuint projectionLoc = glGetUniformLocation(shaderProgram, "projection");
     GLuint normalLoc = glGetUniformLocation(shaderProgram, "normalMat");
-
-    
 
     glEnable(GL_DEPTH_TEST);
     while (!glfwWindowShouldClose(window)) {
@@ -110,9 +109,6 @@ void loop() {
     }
 
     destroyRenderObject(&cubeRenderObject);
-
-    free(cubeMesh.vertices);
-    free(cubeMesh.indices);
 }
 
 void destroy() {

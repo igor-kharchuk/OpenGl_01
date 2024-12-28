@@ -4,7 +4,6 @@ RenderObject createRenderObject(Mesh mesh) {
     RenderObject renderObj;
     
     renderObj.indexCount = mesh.indexCount;
-    //printf("%i\n", (int)renderObj.indexCount);
 
     // Генерація VAO, VBO та EBO
     glGenVertexArrays(1, &renderObj.VAO);
@@ -13,16 +12,6 @@ RenderObject createRenderObject(Mesh mesh) {
 
     // Прив'язка VAO
     glBindVertexArray(renderObj.VAO);
-    
-    /*
-    Vertex vertices[mesh.vertexCount];
-    GLuint indices[mesh.indexCount];
-    for (int i = 0; i < mesh.vertexCount; i++) {
-        vertices[i] = mesh.vertices[i];
-    }
-    for (int i = 0; i < mesh.indexCount; i++) {
-        indices[i] = mesh.indices[i];
-    } */
     
     // Прив'язка та налаштування VBO
     glBindBuffer(GL_ARRAY_BUFFER, renderObj.VBO);
@@ -52,7 +41,6 @@ void drawRenderObject(RenderObject* renderObject, GLuint shaderProgram) {
     glUseProgram(shaderProgram);
     glBindVertexArray(renderObject->VAO);
     glDrawElements(GL_TRIANGLES, renderObject->indexCount, GL_UNSIGNED_INT, 0);
-    //printf("%i\n", (int)renderObject->indexCount);
     glBindVertexArray(0);
 }
 

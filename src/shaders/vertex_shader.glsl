@@ -13,4 +13,5 @@ out vec3 normal;
 void main() {
     gl_Position = projection * view * model * vec4(aPos, 1.0);
     normal = (normalMat * vec4(aNormal, 1)).rgb;
+    //normal = aNormal;
 }

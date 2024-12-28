@@ -20,5 +20,6 @@ typedef struct {
 } Mesh;
 
 int loadObj(const char* filename, Mesh* mesh);
+void calculateNormals(Mesh* mesh);
 
 #endif

@@ -23,8 +23,8 @@ out vec4 FragColor;
 
 void main() {
 	float lambert = saturate(dot(lightDir, normal));
-   // FragColor = vec4(smoothstep(-0.35, 1, lambert));
+    FragColor = vec4(smoothstep(-0.5, 1, lambert));
 	//FragColor *= vec4(0.2, 0.3, 0.4, 0.0) * 2;
-	FragColor = vec4(normal, 1.0);
+	//FragColor = vec4((normal + 1.0) / 2.0, 1.0);
 	//FragColor = vec4(1.0);
 }
