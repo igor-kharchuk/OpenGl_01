@@ -7,7 +7,8 @@
 typedef struct {
     vec3 position; 
     vec3 color;     
-    vec3 normal;    
+    vec3 normal;
+    vec2 uv;    
 } Vertex;
 
 typedef struct {

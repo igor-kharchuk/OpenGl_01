@@ -31,16 +31,38 @@ RenderObject createRenderObject(Mesh mesh) {
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal)); // Нормалі
     glEnableVertexAttribArray(2);
 
+    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, uv)); // UV-координати
+    glEnableVertexAttribArray(3);
+
     // Розв'язка VAO
     glBindVertexArray(0);
 
     return renderObj;
 }
 
-void drawRenderObject(RenderObject* renderObject, GLuint shaderProgram) {
+ROShaderLocations createShaderLocations(GLuint shaderProgram, char* modelLocName, char* normalLocName, char* viewLocName, char* projectionLocName) {
+    ROShaderLocations sLoc;
+
+    sLoc.modelLoc = glGetUniformLocation(shaderProgram, modelLocName);
+    sLoc.normalLoc = glGetUniformLocation(shaderProgram, normalLocName);
+    sLoc.viewLoc = glGetUniformLocation(shaderProgram, viewLocName);
+    sLoc.projectionLoc = glGetUniformLocation(shaderProgram, projectionLocName);
+
+    return sLoc;
+}
+
+void drawRenderObject(RenderObject* renderObject, GLuint shaderProgram, ROShaderMatrices shaderMatrices, ROShaderLocations shaderLocations) {
     glUseProgram(shaderProgram);
+
+    glUniformMatrix4fv(shaderLocations.modelLoc, 1, GL_FALSE, shaderMatrices.modelMatrix);
+    glUniformMatrix4fv(shaderLocations.normalLoc, 1, GL_FALSE, shaderMatrices.normalMatrix);
+    glUniformMatrix4fv(shaderLocations.viewLoc, 1, GL_FALSE, shaderMatrices.viewMatrix);
+    glUniformMatrix4fv(shaderLocations.projectionLoc, 1, GL_FALSE, shaderMatrices.projectionMatrix);
+
     glBindVertexArray(renderObject->VAO);
+
     glDrawElements(GL_TRIANGLES, renderObject->indexCount, GL_UNSIGNED_INT, 0);
+
     glBindVertexArray(0);
 }
 

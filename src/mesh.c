@@ -14,17 +14,20 @@ int loadObj(const char* filename, Mesh* mesh) {
 
     char line[128];
     size_t vertexCount = 0;
+    size_t uvCount = 0;
     size_t normalCount = 0;
     size_t indexCount = 0;
 
-    // Перший цикл: підрахунок кількості вершин, нормалей і індексів
+    // Перший цикл: підрахунок кількості вершин, текстурних координат, нормалей та індексів
     while (fgets(line, sizeof(line), file)) {
         if (line[0] == 'v' && line[1] == ' ') {
             vertexCount++;
+        } else if (line[0] == 'v' && line[1] == 't') {
+            uvCount++;
         } else if (line[0] == 'v' && line[1] == 'n') {
             normalCount++;
         } else if (line[0] == 'f') {
-            indexCount += 3;  // Для кожного трикутника 3 індекси
+            indexCount += 3; // Для кожного трикутника 3 індекси
         }
     }
 
@@ -38,10 +41,21 @@ int loadObj(const char* filename, Mesh* mesh) {
         return 0;
     }
 
+    vec3* normals = malloc(sizeof(vec3) * normalCount);
+    vec2* uvs = malloc(sizeof(vec2) * uvCount);
+
+    if (!normals || !uvs) {
+        printf("Не вдалося виділити пам'ять для допоміжних масивів\n");
+        free(mesh->vertices);
+        free(mesh->indices);
+        fclose(file);
+        return 0;
+    }
+
     // Повертаємо курсор файлу на початок
     fseek(file, 0, SEEK_SET);
 
-    size_t vIndex = 0, nIndex = 0, iIndex = 0;
+    size_t vIndex = 0, uvIndex = 0, nIndex = 0, iIndex = 0;
 
     // Другий цикл: заповнення даних у відповідні масиви
     while (fgets(line, sizeof(line), file)) {
@@ -52,20 +66,36 @@ int loadObj(const char* filename, Mesh* mesh) {
             glm_vec3_copy(vertex, mesh->vertices[vIndex].position);
             glm_vec3_copy((vec3){1.0f, 1.0f, 1.0f}, mesh->vertices[vIndex].color); // Припустимо, білий колір
             vIndex++;
+        } else if (line[0] == 'v' && line[1] == 't') {
+            // Текстурні координати
+            vec2 uv;
+            sscanf(line, "vt %f %f", &uv[0], &uv[1]);
+            glm_vec2_copy(uv, uvs[uvIndex++]);
         } else if (line[0] == 'v' && line[1] == 'n') {
             // Нормалі
             vec3 normal;
             sscanf(line, "vn %f %f %f", &normal[0], &normal[1], &normal[2]);
-            glm_vec3_copy(normal, mesh->vertices[nIndex].normal);
-            nIndex++;
+            glm_vec3_copy(normal, normals[nIndex++]);
         } else if (line[0] == 'f') {
             // Індекси (трикутники)
-            GLuint idx[3];
-            int matched = sscanf(line, "f %u/%*u/%*u %u/%*u/%*u %u/%*u/%*u", &idx[0], &idx[1], &idx[2]);
-            if (matched == 3) {
-                mesh->indices[iIndex++] = idx[0] - 1; // Переводимо індекси з 1 в 0
-                mesh->indices[iIndex++] = idx[1] - 1;
-                mesh->indices[iIndex++] = idx[2] - 1;
+            unsigned int vIdx[3], uvIdx[3], nIdx[3];
+            int matched = sscanf(line, "f %u/%u/%u %u/%u/%u %u/%u/%u",
+                                 &vIdx[0], &uvIdx[0], &nIdx[0],
+                                 &vIdx[1], &uvIdx[1], &nIdx[1],
+                                 &vIdx[2], &uvIdx[2], &nIdx[2]);
+
+            if (matched == 9) {
+                for (int k = 0; k < 3; k++) {
+                    unsigned int vi = vIdx[k] - 1;
+                    unsigned int uvi = uvIdx[k] - 1;
+                    unsigned int ni = nIdx[k] - 1;
+
+                    // Копіюємо UV та нормалі у відповідні вершини
+                    glm_vec2_copy(uvs[uvi], mesh->vertices[vi].uv);
+                    glm_vec3_copy(normals[ni], mesh->vertices[vi].normal);
+
+                    mesh->indices[iIndex++] = vi; // Додаємо індекс вершини
+                }
             }
         }
     }
@@ -77,9 +107,14 @@ int loadObj(const char* filename, Mesh* mesh) {
     mesh->vertexCount = vertexCount;
     mesh->indexCount = indexCount;
 
+    // Звільняємо тимчасові масиви
+    free(normals);
+    free(uvs);
+
     fclose(file);
     return 1;
 }
+
 
 void calculateNormals(Mesh* mesh) {
     for (size_t i = 0; i < mesh->indexCount; i += 3) {

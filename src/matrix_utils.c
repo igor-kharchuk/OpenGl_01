@@ -4,6 +4,8 @@
 void createModelMatrix (mat4* matrix, vec3 position, vec3 rotation, vec3 scale) {
     glm_mat4_identity(*matrix);
 
+    glm_translate(*matrix, position);
+
     glm_scale(*matrix, scale);
 
     mat4 rotationMatrix;
@@ -14,7 +16,7 @@ void createModelMatrix (mat4* matrix, vec3 position, vec3 rotation, vec3 scale) 
     glm_rotate_z(*matrix, glm_rad(rotation[2]), rotationMatrix);
     glm_mat4_copy(rotationMatrix, *matrix);
 
-    glm_translate(*matrix, position);
+    
 }
 
 void createViewMatrix(mat4* matrix, Camera* camera) {

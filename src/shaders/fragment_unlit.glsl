@@ -33,7 +33,7 @@ void main() {
 	float lambert = saturate(dot(lightDir, normal));
     lambert = smoothstep(-1, 1, lambert);
 
-    FragColor = vec4(textureColor * lightColor * lambert + ambientColor, 1.0);
+    FragColor = vec4(textureColor, 1.0);
 	//FragColor *= vec4(uv.x, uv.y, 0.0, 1.0);
 	//FragColor = vec4((normal + 1.0) / 2.0, 1.0);
 	//FragColor = vec4(1.0);

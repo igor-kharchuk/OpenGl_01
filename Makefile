@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -Wall -MMD -O2
-LDFLAGS = -lglfw -lGL -lGLEW -lm -lcglm
+LDFLAGS = -lglfw -lGL -lGLEW -lm -lcglm -lfreeimage
 
 # Директори для об'єктних файлів і результатів
 OBJDIR = build/obj
